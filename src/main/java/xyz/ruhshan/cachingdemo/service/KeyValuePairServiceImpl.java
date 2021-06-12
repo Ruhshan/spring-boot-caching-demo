@@ -14,55 +14,23 @@ import java.util.Optional;
 @Slf4j
 public class KeyValuePairServiceImpl implements KeyValuePairService {
     private final KeyValuePairRepository keyValuePairRepository;
-    private final RedisTemplate<String, Object> redisTemplate;
-    private final ObjectMapper objectMapper;
 
-    public KeyValuePairServiceImpl(KeyValuePairRepository keyValuePairRepository, RedisTemplate<String, Object> redisTemplate) {
+    public KeyValuePairServiceImpl(KeyValuePairRepository keyValuePairRepository) {
         this.keyValuePairRepository = keyValuePairRepository;
-        this.redisTemplate = redisTemplate;
-        this.objectMapper = new ObjectMapper();
     }
 
     @Override
     public KeyValuePair findByKey(String key) {
 
-        return checkInCache(key).orElseGet(()->this.getFromDb(key));
+        return keyValuePairRepository.findByKey(key);
 
     }
 
     @Override
     public void save(KeyValuePair keyValuePair) {
         keyValuePairRepository.save(keyValuePair);
-        saveInCache(keyValuePair.getKey(), keyValuePair);
     }
 
-    private Optional<KeyValuePair> checkInCache(String key) {
-
-        try {
-            Object entryInCache = redisTemplate.opsForValue().get(key);
-            return Optional.of(objectMapper.readValue(entryInCache.toString(), KeyValuePair.class));
-
-        } catch (Exception e) {
-            log.warn("Error in processing {}", e.getMessage());
-        }
-
-        return Optional.empty();
-
-    }
-
-    private KeyValuePair getFromDb(String key){
-        KeyValuePair keyValuePair = keyValuePairRepository.findByKey(key);
-        saveInCache(key, keyValuePair);
-        return keyValuePair;
-    }
-
-    private void saveInCache(String key, KeyValuePair keyValuePair){
-        try {
-            redisTemplate.opsForValue().set(key, objectMapper.writeValueAsString(keyValuePair));
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-    }
 
 
 }

@@ -16,4 +16,9 @@ public class KeyValuePairController {
     public KeyValuePair getByKey(@PathVariable("key") String key){
         return keyValuePairService.findByKey(key);
     }
+
+    @PostMapping("/")
+    public void create(@RequestBody KeyValuePair keyValuePair){
+        keyValuePairService.save(keyValuePair);
+    }
 }

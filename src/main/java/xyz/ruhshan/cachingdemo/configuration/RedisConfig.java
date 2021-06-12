@@ -5,8 +5,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 
-import java.time.Duration;
-
 @Configuration
 public class RedisConfig {
 
