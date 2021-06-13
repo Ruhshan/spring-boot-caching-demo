@@ -1,12 +1,25 @@
 package xyz.ruhshan.cachingdemo.configuration;
 
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.RedisSerializationContext;
+import org.springframework.data.redis.serializer.RedisSerializer;
 
+import java.time.Duration;
+
+@EnableCaching
 @Configuration
 public class RedisConfig {
+
+
+    private final RedisSerializer<String> stringSerializer = RedisSerializer.string();
+    private final RedisSerializer<Object> objectRedisSerializer = RedisSerializer.json();
+
+    private final Duration ttl = Duration.ofHours(6);
 
 
     @Bean
@@ -15,5 +28,16 @@ public class RedisConfig {
         redisTemplate.setConnectionFactory(redisConnectionFactory);
         return redisTemplate;
     }
+
+    @Bean
+    public RedisCacheConfiguration redisCacheConfiguration() {
+        return RedisCacheConfiguration
+                .defaultCacheConfig()
+                .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(stringSerializer))
+                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(objectRedisSerializer))
+                .entryTtl(ttl);
+    }
+
+
 }
 
